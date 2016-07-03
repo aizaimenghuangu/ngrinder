@@ -958,12 +958,33 @@ public class PerfTestService extends AbstractPerfTestService implements Controll
 		Map<String, Object> result = consoleManager.getConsoleUsingPort(perfTest.getPort()).getStatisticsData();
 		@SuppressWarnings("unchecked")
 		Map<String, Object> totalStatistics = MapUtils.getMap(result, "totalStatistics", MapUtils.EMPTY_MAP);
+		// 获取附加数据
+		Map<String, Object> plusStatistics = MapUtils.getMap(result, "plusStatistics", MapUtils.EMPTY_MAP);
+
 		LOGGER.info("Total Statistics for test {}  is {}", perfTest.getId(), totalStatistics);
+		LOGGER.info("plug Statistics for test {}  is {}", perfTest.getId(), plusStatistics);
+
 		perfTest.setTps(parseDoubleWithSafety(totalStatistics, "TPS", 0D));
 		perfTest.setMeanTestTime(parseDoubleWithSafety(totalStatistics, "Mean_Test_Time_(ms)", 0D));
 		perfTest.setPeakTps(parseDoubleWithSafety(totalStatistics, "Peak_TPS", 0D));
 		perfTest.setTests(MapUtils.getDouble(totalStatistics, "Tests", 0D).longValue());
 		perfTest.setErrors(MapUtils.getDouble(totalStatistics, "Errors", 0D).longValue());
+
+
+		// 附加信息写到model， 持久化
+		perfTest.setTpsStd(parseDoubleWithSafety(plusStatistics, "tpsStd", 0D));
+		perfTest.setTpsVix(parseDoubleWithSafety(plusStatistics, "tpsVix", 0D));
+		perfTest.setMinRT(parseDoubleWithSafety(plusStatistics, "minMeanTime", 0D));
+		perfTest.setTwentyFiveMeanTime(parseDoubleWithSafety(plusStatistics, "twentyFiveMeanTime", 0D));
+		perfTest.setFiftyMeanTime(parseDoubleWithSafety(plusStatistics, "fiftyMeanTime", 0D));
+		perfTest.setServentyFiveMeanTime(parseDoubleWithSafety(plusStatistics, "serventyFiveMeanTime", 0D));
+		perfTest.setEightyMeanTime(parseDoubleWithSafety(plusStatistics, "eightyMeanTime", 0D));
+		perfTest.setEightyFiveMeanTime(parseDoubleWithSafety(plusStatistics, "eightyFiveMeanTime", 0D));
+		perfTest.setNinetyMeanTime(parseDoubleWithSafety(plusStatistics, "ninetyMeanTime", 0D));
+		perfTest.setNinetyFiveMeanTime(parseDoubleWithSafety(plusStatistics, "ninetyFiveMeanTime", 0D));
+		perfTest.setNinetyNineMeanTime(parseDoubleWithSafety(plusStatistics, "ninetyNineMeanTime", 0D));
+		perfTest.setMaxRT(parseDoubleWithSafety(plusStatistics, "maxMeanTime", 0D));
+
 
 	}
 

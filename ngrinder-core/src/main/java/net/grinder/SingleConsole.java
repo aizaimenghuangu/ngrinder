@@ -44,6 +44,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.mutable.MutableBoolean;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
+import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 import org.ngrinder.common.exception.NGrinderRuntimeException;
 import org.ngrinder.common.util.DateUtils;
 import org.ngrinder.common.util.ReflectionUtils;
@@ -61,6 +64,8 @@ import java.io.FileWriter;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 
 import static org.ngrinder.common.util.CollectionUtils.*;
 import static org.ngrinder.common.util.ExceptionUtils.processException;
@@ -820,6 +825,11 @@ public class SingleConsole extends AbstractSingleConsole implements Listener, Sa
 	public static final Set<String> INTERESTING_STATISTICS = Sets.newHashSet("Tests", "Errors", "TPS",
 			"Response_bytes_per_second", "Mean_time_to_first_byte", "Peak_TPS", "Mean_Test_Time_(ms)", "User_defined");
 
+	// tps list
+	List<Double> tps = new CopyOnWriteArrayList<Double>();
+	// rt list
+	List<Double> meanTestTime = new CopyOnWriteArrayList<Double>();
+
 	/**
 	 * Build up statistics for current sampling.
 	 *
@@ -864,6 +874,19 @@ public class SingleConsole extends AbstractSingleConsole implements Listener, Sa
 			}
 		}
 
+		LOGGER.debug("xiongjinfei start get plug data");
+
+		// 获取tps, rt集合
+		for (Entry<String, StatisticExpression> each : getExpressionEntrySet()) {
+			if ("TPS".equals(each.getKey())) {
+				tps.add((Double) getRealDoubleValue(each.getValue()
+						.getDoubleValue(intervalStatistics)));
+			} else if ("Mean_Test_Time_(ms)".equals(each.getKey())) {
+				meanTestTime.add((Double) getRealDoubleValue(each.getValue()
+						.getDoubleValue(intervalStatistics)));
+			}
+		}
+
 		result.put("totalStatistics", totalStatistics);
 		result.put("cumulativeStatistics", cumulativeStatistics);
 		result.put("lastSampleStatistics", lastSampleStatistics);
@@ -876,6 +899,93 @@ public class SingleConsole extends AbstractSingleConsole implements Listener, Sa
 		}
 		// Finally overwrite.. current one.
 		this.statisticData = result;
+	}
+
+	/**
+	 * 从updateStatistics()累加数据, list :rt 和 tps, 为成员变量
+	 *
+	 * 再处理集合，放到statisticData中
+	 *
+	 * @author xiongjinfei
+	 */
+	public void getPlusResult(){
+
+		LOGGER.debug("xiongjinfei getPlusResult() tpslist {}  rtlist is {}",
+				tps.toString(), meanTestTime.toString());
+
+		int i = 0;
+		int j = 0;
+		// list转成数组， 标准库使用数组作为参数
+		double[] tpsArray = new double[tps.size()];
+		for (double tpsNum : tps) {
+			tpsArray[i++] = tpsNum;
+		}
+
+		// list转成数组
+		double[] meanTestTimeArray = new double[meanTestTime.size()];
+		for (double meanTime : meanTestTime) {
+			meanTestTimeArray[j++] = meanTime;
+		}
+
+		// tps 标准差
+		double tpsStd = new StandardDeviation().evaluate(tpsArray);
+
+		// tps 平均值
+		double tpsMean = new Mean().evaluate(tpsArray, 0, tpsArray.length);
+		// tps 波动率= tps 标准差 / tps 平均值
+		double tpsVix = 0;
+		if(0 != tpsMean){
+			tpsVix = tpsStd / tpsMean;
+		}
+
+		// meanTestTime 百分位数
+		Percentile percentile = new Percentile();
+		// 先排序
+		Arrays.sort(meanTestTimeArray);
+		// meanTestTime最小值
+		double minMeanTime = meanTestTimeArray[0];
+		double twentyFiveMeanTime = percentile.evaluate(meanTestTimeArray, 25);
+		double fiftyMeanTime = percentile.evaluate(meanTestTimeArray, 50);
+		double serventyFiveMeanTime = percentile
+				.evaluate(meanTestTimeArray, 75);
+		double eightyMeanTime = percentile.evaluate(meanTestTimeArray, 80);
+		double eightyFiveMeanTime = percentile.evaluate(meanTestTimeArray, 85);
+		double ninetyMeanTime = percentile.evaluate(meanTestTimeArray, 90);
+		double ninetyFiveMeanTime = percentile.evaluate(meanTestTimeArray, 95);
+		double ninetyNineMeanTime = percentile.evaluate(meanTestTimeArray, 99);
+
+		int length = meanTestTimeArray.length;
+		// meanTestTime最高值
+		double maxMeanTime = meanTestTimeArray[length - 1];
+		// meanTestTime平均值
+		// double TimeMean = new Mean().evaluate(meanTestTimeArray, 0,
+		// meanTestTimeArray.length);
+
+		LOGGER.debug(
+				"hugang plug Statistics MinMeanTime {}  MaxMeanTime is {}",
+				minMeanTime, maxMeanTime);
+		// 附加信息 xiongjinfei
+		// tps 标准差, tps 波动率， 最小/最大RT, RT百分位数
+		Map<String, Object> plusStatistics = newHashMap();
+		plusStatistics.put("tpsStd", tpsStd);
+//      plusStatistics.put("tpsMean", tpsMean);
+		plusStatistics.put("tpsVix", tpsVix);
+		plusStatistics.put("minMeanTime", minMeanTime);
+		plusStatistics.put("twentyFiveMeanTime", twentyFiveMeanTime);
+		plusStatistics.put("fiftyMeanTime", fiftyMeanTime);
+		plusStatistics.put("serventyFiveMeanTime", serventyFiveMeanTime);
+		plusStatistics.put("eightyMeanTime", eightyMeanTime);
+		plusStatistics.put("eightyFiveMeanTime", eightyFiveMeanTime);
+		plusStatistics.put("ninetyMeanTime", ninetyMeanTime);
+		plusStatistics.put("ninetyFiveMeanTime", ninetyFiveMeanTime);
+		plusStatistics.put("ninetyNineMeanTime", ninetyNineMeanTime);
+		plusStatistics.put("maxMeanTime", maxMeanTime);
+
+
+		LOGGER.debug("SingleConsole plug Statistics map plusStatistics {}", plusStatistics);
+
+
+		this.statisticData.put("plusStatistics", plusStatistics);
 	}
 
 	/*
@@ -1196,6 +1306,10 @@ public class SingleConsole extends AbstractSingleConsole implements Listener, Sa
 		}
 		LOGGER.info("Sampling is stopped");
 		informTestSamplingEnd();
+
+		// 结束采样后，处理数据
+		// xiongjinfei
+		getPlusResult();
 	}
 
 	private void informTestSamplingStart() {

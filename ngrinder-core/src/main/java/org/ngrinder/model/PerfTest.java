@@ -238,6 +238,59 @@ public class PerfTest extends BaseModel<PerfTest> {
 	private Double peakTps;
 
 	/**
+	 * 新增字段，TPS标准差，TPS波动率，最小/大RT，RT 25/50/75/80/85/90/95/99百分位数
+	 * hugang
+	 */
+	@Expose
+	@Column(name = "tpsStd")
+	private Double tpsStd;
+
+	@Expose
+	@Column(name = "tpsVix")
+	private Double tpsVix;
+
+
+	@Expose
+	@Column(name = "minRT")
+	private Double minRT;
+
+	@Expose
+	@Column(name = "twentyFiveMeanTime")
+	private Double twentyFiveMeanTime;
+
+	@Expose
+	@Column(name = "fiftyMeanTime")
+	private Double fiftyMeanTime;
+
+	@Expose
+	@Column(name = "serventyFiveMeanTime")
+	private Double serventyFiveMeanTime;
+
+	@Expose
+	@Column(name = "eightyMeanTime")
+	private Double eightyMeanTime;
+
+	@Expose
+	@Column(name = "eightyFiveMeanTime")
+	private Double eightyFiveMeanTime;
+
+	@Expose
+	@Column(name = "ninetyMeanTime")
+	private Double ninetyMeanTime;
+
+	@Expose
+	@Column(name = "ninetyFiveMeanTime")
+	private Double ninetyFiveMeanTime;
+
+	@Expose
+	@Column(name = "ninetyNineMeanTime")
+	private Double ninetyNineMeanTime;
+
+	@Expose
+	@Column(name = "maxRT")
+	private Double maxRT;
+
+	/**
 	 * Console port for this test. This is the identifier for console
 	 */
 	@Column(name = "port")
@@ -620,6 +673,103 @@ public class PerfTest extends BaseModel<PerfTest> {
 	public void setTps(Double tps) {
 		this.tps = tps;
 	}
+
+	public Double getTpsStd(){
+		return tpsStd;
+	}
+
+	public void setTpsStd(Double tpsStd) {
+		this.tpsStd = tpsStd;
+	}
+
+	public Double getTpsVix(){
+		return tpsVix;
+	}
+
+	public void setTpsVix(Double tpsVix){
+		this.tpsVix = tpsVix;
+	}
+
+	public Double getMinRT(){
+		return minRT;
+	}
+
+	public void setMinRT(Double minRT){
+		this.minRT = minRT;
+	}
+
+	public  Double getTwentyFiveMeanTime(){
+		return  twentyFiveMeanTime;
+	}
+
+	public void setTwentyFiveMeanTime(Double twentyFiveMeanTime){
+		this.twentyFiveMeanTime = twentyFiveMeanTime;
+	}
+
+	public Double getFiftyMeanTime(){
+		return fiftyMeanTime;
+	}
+
+	public void setFiftyMeanTime(Double fiftyMeanTime){
+		this.fiftyMeanTime = fiftyMeanTime;
+	}
+
+	public Double getServentyFiveMeanTime(){
+		return  serventyFiveMeanTime;
+	}
+
+	public void setServentyFiveMeanTime(Double serventyFiveMeanTime){
+		this.serventyFiveMeanTime = serventyFiveMeanTime;
+	}
+
+	public Double getEightyMeanTime(){
+		return  eightyMeanTime;
+	}
+
+	public void setEightyMeanTime(Double eightyMeanTime){
+		this.eightyMeanTime = eightyMeanTime;
+	}
+
+	public Double getEightyFiveMeanTime(){
+		return  eightyFiveMeanTime;
+	}
+
+	public void setEightyFiveMeanTime(Double eightyFiveMeanTime){
+		this.eightyFiveMeanTime = eightyFiveMeanTime;
+	}
+
+	public Double getNinetyMeanTime(){
+		return ninetyMeanTime;
+	}
+
+	public void setNinetyMeanTime(Double ninetyMeanTime){
+		this.ninetyMeanTime = ninetyMeanTime;
+	}
+
+	public Double getNinetyFiveMeanTime(){
+		return ninetyFiveMeanTime;
+	}
+
+	public void setNinetyFiveMeanTime(Double ninetyFiveMeanTime){
+		this.ninetyFiveMeanTime = ninetyFiveMeanTime;
+	}
+
+	public Double getNinetyNineMeanTime(){
+		return ninetyNineMeanTime;
+	}
+
+	public void setNinetyNineMeanTime(Double ninetyNineMeanTime){
+		this.ninetyNineMeanTime = ninetyNineMeanTime;
+	}
+
+	public  Double getMaxRT(){
+		return maxRT;
+	}
+
+	public void setMaxRT(Double maxRT){
+		this.maxRT = maxRT;
+	}
+
 
 	public Double getPeakTps() {
 		return peakTps;
